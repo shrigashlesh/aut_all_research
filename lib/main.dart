@@ -1,4 +1,4 @@
-import 'package:aut_all_research/delogo_video.dart';
+import 'package:aut_all_research/delogo_image.dart';
 import 'package:aut_all_research/utils/path_service.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +14,7 @@ class AppLauncher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: DelogoVideoWithFFMPEG(),
+      home: DelogoImageWithFFMPEG(),
     );
   }
 }

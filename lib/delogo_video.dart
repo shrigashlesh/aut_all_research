@@ -5,7 +5,6 @@ import 'package:aut_all_research/utils/ffmpeg_encoder.dart';
 import 'package:aut_all_research/utils/path_service.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:opencv_dart/opencv_dart.dart' hide log;
 import 'package:video_player/video_player.dart';
 
 class DelogoVideoWithFFMPEG extends StatefulWidget {
@@ -135,7 +134,7 @@ class _DelogoVideoWithFFMPEGState extends State<DelogoVideoWithFFMPEG> {
     try {
       // Step 1: Create mask video
       final createMaskCommand =
-          '''-i ${selectedVideo!.path} -vf "format=rgba,colorkey=0xf04c46:0.1:0.2,drawbox=x=w/2-40:y=h/2-40:w=80:h=80:color=white:t=fill" $maskVideoPath''';
+          '''-i ${selectedVideo!.path} -vf "format=rgba,colorkey=0xf04c46:0.001:0.2,alphaextract,negate,format=rgba,colorchannelmixer=rr=1:rg=1:rb=1:gr=1:gg=1:gb=1:br=1:bg=1:bb=1:aa=1" $maskVideoPath''';
       await FfmpegEncoder.runFFmpegCommand(
         createMaskCommand,
         onError: (e, s) {
@@ -148,7 +147,7 @@ class _DelogoVideoWithFFMPEGState extends State<DelogoVideoWithFFMPEG> {
           // Step 2: Extract frames from the mask video
           await extractFrames(maskVideoPath, maskFrameDirectory);
           await Future.delayed(const Duration(seconds: 1));
-          for (int i = 1; i <= 5; i++) {
+          for (int i = 1; i <= 120; i++) {
             final frameNumber = i.toString().padLeft(4, '0');
             final frameName = 'frame_$frameNumber.png';
             final framePath = "$orgFrameDirectory/$frameName";
@@ -170,30 +169,7 @@ class _DelogoVideoWithFFMPEGState extends State<DelogoVideoWithFFMPEG> {
             );
           }
 
-          final reassembleCommand =
-              '''-framerate 1 -i $processedFrameDirectory/frame_%04d.png -c:v libx264 -pix_fmt yuv420p $outputPath''';
-          await FfmpegEncoder.runFFmpegCommand(
-            reassembleCommand,
-            onError: (e, s) {
-              log("FFmpeg Error during reassembly: $e");
-              setState(() {
-                isProcessing = false;
-              });
-            },
-            onCompleted: (code) async {
-              log("Delogo video created: $outputPath");
-              setState(() {
-                outputVideo = File(outputPath);
-                isProcessing = false;
-              });
-              outputVideoPlayer = VideoPlayerController.file(outputVideo!)
-                ..initialize().then((_) {
-                  // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-                  setState(() {});
-                });
-              outputVideoPlayer?.play();
-            },
-          );
+          extractOutput(dir: processedFrameDirectory, outputPath: outputPath);
         },
       );
     } catch (e) {
@@ -204,13 +180,41 @@ class _DelogoVideoWithFFMPEGState extends State<DelogoVideoWithFFMPEG> {
     }
   }
 
+  Future<void> extractOutput(
+      {required String dir, required String outputPath}) async {
+    final reassembleCommand =
+        '''-framerate 24 -i $dir/frame_%04d.png -c:v libx264 -pix_fmt yuv420p $outputPath''';
+    await FfmpegEncoder.runFFmpegCommand(
+      reassembleCommand,
+      onError: (e, s) {
+        log("FFmpeg Error during reassembly: $e");
+        setState(() {
+          isProcessing = false;
+        });
+      },
+      onCompleted: (code) async {
+        log("Delogo video created: $outputPath");
+        setState(() {
+          outputVideo = File(outputPath);
+          isProcessing = false;
+        });
+        outputVideoPlayer = VideoPlayerController.file(outputVideo!)
+          ..initialize().then((_) {
+            // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+            setState(() {});
+          });
+        outputVideoPlayer?.play();
+      },
+    );
+  }
+
   Future<void> extractFrames(String videoPath, String outputDirectory) async {
     // Ensure the directory exists
     Directory(outputDirectory).createSync(recursive: true);
 
     // Extract frames from the video
     final extractFramesCommand =
-        '''-i "$videoPath" -vf "fps=1,format=rgb24" $outputDirectory/frame_%04d.png''';
+        '''-i "$videoPath" -vf "fps=24,format=rgb24" $outputDirectory/frame_%04d.png''';
     await FfmpegEncoder.runFFmpegCommand(
       extractFramesCommand,
       onError: (e, s) {
