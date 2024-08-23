@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:aut_all_research/utils/ffmpeg_encoder.dart';
 import 'package:aut_all_research/utils/path_service.dart';
+import 'package:aut_all_research/utils/scaler.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
@@ -147,24 +148,6 @@ class _DelogoImageWithFFMPEGState extends State<DelogoImageWithFFMPEG> {
     );
   }
 
-  Future<(double, double)> calScaleFact(Size orgSize) async {
-    Rect? bounds = _imageKey.globalPaintBounds(null);
-    // Retry mechanism
-    while (bounds == null || bounds.width == 0) {
-      await Future.delayed(const Duration(milliseconds: 10));
-      bounds = _imageKey.globalPaintBounds(null);
-    }
-    final double heightInDevice = bounds.size.height;
-    final double widthInDevice = bounds.size.width;
-
-    double imageOriginalHeight = orgSize.height;
-    double imageOriginalWidth = orgSize.width;
-
-    final scaleX = imageOriginalWidth / widthInDevice;
-    final scaleY = imageOriginalHeight / heightInDevice;
-    return (scaleX, scaleY);
-  }
-
   Future<void> createMaskImage(String maskPath) async {
     if (selectedImage == null) {
       log("No image selected to create a mask");
@@ -192,7 +175,8 @@ class _DelogoImageWithFFMPEGState extends State<DelogoImageWithFFMPEG> {
     final paintBlack = Paint()..color = Colors.black;
     canvas.drawRect(
         Rect.fromLTWH(0, 0, originalWidth, originalHeight), paintBlack);
-    final scale = await calScaleFact(Size(originalWidth, originalHeight));
+    final scale =
+        await calScaleFact(Size(originalWidth, originalHeight), _imageKey);
     // Draw freeform paths with scaling
     final paintWhite = Paint()..color = Colors.white;
     for (var path in paths) {
@@ -303,18 +287,5 @@ class DrawingPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
-  }
-}
-
-extension GlobalKeyExtension on GlobalKey {
-  Rect? globalPaintBounds(RenderObject? ancestor) {
-    final renderObject = currentContext?.findRenderObject();
-    if (renderObject != null) {
-      final translation =
-          renderObject.getTransformTo(ancestor).getTranslation();
-      final offset = Offset(translation.x, translation.y);
-      return renderObject.paintBounds.shift(offset);
-    }
-    return null;
   }
 }
