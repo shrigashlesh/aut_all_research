@@ -19,12 +19,21 @@ dependencies:
   depth_map_reader:
     path: ../depth_map_reader
   flutter_zxing: ^1.7.0
+  injectable: ^2.4.4
+  flutter_local_notifications: ^17.2.2
+  get_it: ^7.7.0
+  workmanager:
+    git:
+      url: https://github.com/fluttercommunity/flutter_workmanager.git
+      ref: b783000
+  timezone: ^0.9.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
   build_runner: ^2.4.11
   flutter_gen_runner:
+  injectable_generator: ^2.1.6
 
 flutter:
   uses-material-design: true
