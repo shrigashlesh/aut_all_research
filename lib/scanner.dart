@@ -72,7 +72,8 @@ class _DemoPageState extends State<DemoPage> {
                     flashAlwaysIcon: const Icon(Icons.flash_on),
                     flashAutoIcon: const Icon(Icons.flash_auto),
                     galleryIcon: const Icon(Icons.photo_library),
-                    toggleCameraIcon: const Icon(Icons.switch_camera),
+                    actionButtonsAlignment: Alignment.topRight,
+                    showToggleCamera: false,
                     actionButtonsBackgroundBorderRadius:
                         BorderRadius.circular(10),
                     actionButtonsBackgroundColor: Colors.black.withOpacity(0.5),
