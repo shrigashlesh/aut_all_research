@@ -13,28 +13,22 @@ void callbackDispatcher() {
     try {
       log("FROM BACKGROUND");
 
-      final data = inputData ??
-          {
-            "title": "Oops",
-            "message": "Tracked",
-          };
-      final title = data["title"] as String?;
-      final message = data["message"] as String?;
+      final pushNotificationService = PushNotificationService();
 
-      if (title != null && message != null) {
-        final pushNotificationService = PushNotificationService();
+      await pushNotificationService.setupFlutterNotifications();
 
-        await pushNotificationService.setupFlutterNotifications();
+      // Check for notifications on this day then based on start date and the interval set in the notification, calculate and run the scheduleNotificationForTheDay.
+      const title = "This will come from local db";
+      const message = "This will come from local db";
 
-        pushNotificationService.scheduleNotificationforTheDay(
-            title: title,
-            message: message,
-            date: DateTime.now().add(
-              const Duration(
-                minutes: 1,
-              ),
-            ));
-      }
+      pushNotificationService.scheduleNotificationforTheDay(
+          title: title,
+          message: message,
+          date: DateTime.now().add(
+            const Duration(
+              minutes: 1,
+            ),
+          ));
     } catch (e) {
       log(e.toString());
     }

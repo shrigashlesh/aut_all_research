@@ -77,7 +77,7 @@ class PushNotificationService {
     );
   }
 
-  Future<void> scheduleRepeatingNotification({
+  Future<void> scheduleRepeatingTask({
     required DateTime startDate,
     required Duration interval,
   }) async {
@@ -88,11 +88,8 @@ class PushNotificationService {
       iOSBackgroundAppRefresh,
       "id",
       existingWorkPolicy: ExistingWorkPolicy.replace,
-      initialDelay: const Duration(minutes: 3),
-      inputData: {
-        'title': 'Scheduled Notification',
-        'message': 'This is a notification that repeats every 30 days',
-      },
+      initialDelay: startDate.difference(DateTime.now()),
+      frequency: interval,
     );
   }
 }

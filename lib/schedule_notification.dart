@@ -16,9 +16,9 @@ class ScheduleNotification extends StatelessWidget {
             onPressed: () async {
               final date = await showDateTimePicker(context: context);
               if (date != null) {
-                get<PushNotificationService>().scheduleRepeatingNotification(
+                get<PushNotificationService>().scheduleRepeatingTask(
                   startDate: date,
-                  interval: const Duration(minutes: 1),
+                  interval: const Duration(days: 1),
                 );
               }
             },
